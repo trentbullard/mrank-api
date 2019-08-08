@@ -1,0 +1,37 @@
+{
+  "sports": [
+    {
+      "id": 1,
+      "name": "foosball",
+      "winningScore": 10
+    },
+    {
+      "id": 2,
+      "name": "cornhole",
+      "winningScore": 21
+    }
+  ],
+  "games": [],
+  "players": [
+    {
+      "id": 1,
+      "name": "trent",
+      "elo": 10
+    },
+    {
+      "id": 2,
+      "name": "yana",
+      "elo": 50
+    },
+    {
+      "id": 3,
+      "name": "benjamin",
+      "elo": 45
+    },
+    {
+      "id": 4,
+      "name": "abhi",
+      "elo": 30
+    }
+  ]
+}
