@@ -10,7 +10,8 @@
     "json-server": "^0.15.0"
   },
   "scripts": {
-    "start": "json-server --watch db.json"
+    "start": "node server.js",
+    "start-dev": "json-server --watch db.dev.json --port 3002"
   },
   "browserslist": {
     "production": [
