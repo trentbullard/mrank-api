@@ -2,16 +2,17 @@
   "name": "mrank-api",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": ">=10.16.0"
-  },
-  "engineStrict": true,
   "dependencies": {
-    "json-server": "^0.15.0"
+    "cors": "^2.8.5",
+    "dotenv": "^8.1.0",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "lodash": "^4.17.15",
+    "pg": "^7.12.1",
+    "pg-native": "^3.0.0"
   },
   "scripts": {
-    "start": "node server.js",
-    "start-dev": "json-server --watch db.dev.json --port 3002"
+    "start": "node -r esm server.js"
   },
   "browserslist": {
     "production": [
