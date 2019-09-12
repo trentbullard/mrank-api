@@ -2,19 +2,23 @@ import _ from "lodash";
 import { query, pool } from "./helpers";
 
 export const getGames = (request, response) => {
+  let gameId = request.query.id;
+  let where = gameId ? `where id=${request.query.id}` : "";
   let limit = "";
   let sort = "";
-  let order = "";
-  if (request.query.sort.length) {
+  if (!_.isEmpty(request.query.sort)) {
+    let comma = "";
     sort = "order by ";
     _.each(request.query.sort, (field, index) => {
-      if (index > 0) {
-        sort += `,`;
+      let order = "";
+      if (
+        !_.isEmpty(request.query.order) &&
+        request.query.order.length >= index + 1
+      ) {
+        order = `${request.query.order[index]}`;
       }
-      sort += `${field}`;
-      if (request.query.order.length >= index + 1) {
-        order += `${request.query.order[index]}`;
-      }
+      sort += `${comma}${field} ${order}`;
+      comma = ",";
     });
   }
   if (request.query.limit) {
@@ -44,7 +48,8 @@ export const getGames = (request, response) => {
       sportId,
       eloAwarded
     from games
-    ${sort} ${order}
+    ${where}
+    ${sort}
     ${limit}
   ) g
     join game_teams gt on gt.gameid=g.id
@@ -52,33 +57,7 @@ export const getGames = (request, response) => {
     join team_players tp on tp.teamid=t.id
     join players p on p.id=tp.playerid
     join elos e on e.playerid=p.id and e.sportid=g.sportId
-  ${sort} ${order}
-  `;
-  query(sqlQuery, response);
-};
-
-export const getGameById = (request, response) => {
-  let sqlQuery = `
-  select
-    g.id as "gameId",
-    g.started as "started",
-    g.sportId as "sportId",
-    g.eloAwarded as "eloAwarded",
-    t.name as "teamName",
-    p.id as "playerId",
-    p.name as "playerName",
-    e.elo as "playerElo",
-    tp.position as "position",
-    tp.score as "score",
-    tp.id as "teamPlayerId"
-  from games g
-    inner join game_teams gt on gt."gameid"=g.id
-    inner join teams t on t.id=gt."teamid"
-    inner join team_players tp on tp."teamid"=t.id
-    inner join players p on p.id=tp."playerid"
-    inner join elos e on e.playerid=p.id and e.sportid=g.sportid
-  where
-    g.id=${request.params.id}
+  order by g.id desc, t.name asc, tp.position asc
   `;
   query(sqlQuery, response);
 };

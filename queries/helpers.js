@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import CryptoJS from "crypto-js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -27,4 +28,13 @@ export const statement = (sql, response) => {
       response.status(200).json(results);
     }
   });
+};
+
+export const auth = token => {
+  let secret = process.env.SECRET || "wrong";
+  let thisMinute = new Date().toISOString().slice(0, 16);
+  let lastMinute = new Date(new Date() - 60000).toISOString().slice(0, 16);
+  let thisMinuteHash = CryptoJS.HmacSHA512(thisMinute, secret).toString();
+  let lastMinuteHash = CryptoJS.HmacSHA512(lastMinute, secret).toString();
+  return token === thisMinuteHash || token === lastMinuteHash;
 };
