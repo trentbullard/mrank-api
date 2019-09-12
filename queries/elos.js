@@ -62,6 +62,16 @@ export const updateElos = async (request, response) => {
       ],
     });
 
+    await client.query({
+      text: `
+        update games set
+          eloAwarded=true
+        where
+          id=$1
+      `,
+      values: [request.body.gameId],
+    });
+
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
