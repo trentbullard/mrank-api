@@ -27,7 +27,7 @@ app.use(
 
 app.get("/", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }
@@ -36,7 +36,7 @@ app.get("/", (request, response) => {
 
 app.get("/sports", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }
@@ -45,7 +45,7 @@ app.get("/sports", (request, response) => {
 
 app.get("/sports/:id", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }
@@ -54,7 +54,7 @@ app.get("/sports/:id", (request, response) => {
 
 app.get("/players", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }
@@ -63,7 +63,7 @@ app.get("/players", (request, response) => {
 
 app.post("/players", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }
@@ -72,7 +72,7 @@ app.post("/players", (request, response) => {
 
 app.get("/games", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }
@@ -81,7 +81,7 @@ app.get("/games", (request, response) => {
 
 app.post("/games", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }
@@ -90,7 +90,7 @@ app.post("/games", (request, response) => {
 
 app.patch("/goal", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }
@@ -99,7 +99,7 @@ app.patch("/goal", (request, response) => {
 
 app.post("/elos", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }
@@ -108,7 +108,7 @@ app.post("/elos", (request, response) => {
 
 app.patch("/elos", (request, response) => {
   log(request);
-  if (!auth(request.query.token)) {
+  if (!auth(request)) {
     response.status(401).json({ error: "token did not match" });
     return null;
   }

@@ -30,11 +30,18 @@ export const statement = (sql, response) => {
   });
 };
 
-export const auth = token => {
+export const auth = ({ method, route: { path }, query: { token } }) => {
+  let lcMethod = method.toLowerCase();
   let secret = process.env.SECRET || "wrong";
   let thisMinute = new Date().toISOString().slice(0, 16);
   let lastMinute = new Date(new Date() - 60000).toISOString().slice(0, 16);
-  let thisMinuteHash = CryptoJS.HmacSHA512(thisMinute, secret).toString();
-  let lastMinuteHash = CryptoJS.HmacSHA512(lastMinute, secret).toString();
+  let thisMinuteHash = CryptoJS.HmacSHA512(
+    thisMinute + lcMethod + path.toString(),
+    secret,
+  ).toString();
+  let lastMinuteHash = CryptoJS.HmacSHA512(
+    lastMinute + lcMethod + path.toString(),
+    secret,
+  ).toString();
   return token === thisMinuteHash || token === lastMinuteHash;
 };
