@@ -31,17 +31,38 @@ export const statement = (sql, response) => {
 };
 
 export const auth = ({ method, route: { path }, query: { token } }) => {
-  let lcMethod = method.toLowerCase();
-  let secret = process.env.SECRET || "wrong";
-  let thisMinute = new Date().toISOString().slice(0, 16);
-  let lastMinute = new Date(new Date() - 60000).toISOString().slice(0, 16);
-  let thisMinuteHash = CryptoJS.HmacSHA512(
+  const lcMethod = method.toLowerCase();
+  const secret = process.env.SECRET || "wrong";
+  const thisMinute = new Date().toISOString().slice(0, 16);
+  const lastMinute = new Date(new Date() - 60000).toISOString().slice(0, 16);
+  const thisMinuteHash = CryptoJS.HmacSHA512(
     thisMinute + lcMethod + path.toString(),
     secret,
   ).toString();
-  let lastMinuteHash = CryptoJS.HmacSHA512(
+  const lastMinuteHash = CryptoJS.HmacSHA512(
     lastMinute + lcMethod + path.toString(),
     secret,
   ).toString();
   return token === thisMinuteHash || token === lastMinuteHash;
+};
+
+export const decryptData = cipher => {
+  const secret = process.env.SECRET || "wrong";
+  return JSON.parse(
+    CryptoJS.AES.decrypt(cipher, secret).toString(CryptoJS.enc.Utf8),
+  );
+};
+
+export const getPasswordHash = password => {
+  return CryptoJS.SHA3(password).toString();
+};
+
+export const getSessionId = ({ method, route: { path }, query: { token } }) => {
+  const secret = process.env.SECRET;
+  const lcMethod = method.toLowerCase();
+  const thisMinute = new Date().toISOString().slice(0, 16);
+  return CryptoJS.HmacSHA512(
+    thisMinute + lcMethod + path.toString(),
+    secret,
+  ).toString();
 };

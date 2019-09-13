@@ -17,6 +17,15 @@ const log = ({ method, url, params, query, body }) => {
   console.log(`  body: `, body);
 };
 
+const processRequest = (request, response) => {
+  log(request);
+  if (!auth(request)) {
+    response.status(401).json({ error: "token did not match" });
+    return false;
+  }
+  return true;
+};
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(
@@ -26,102 +35,87 @@ app.use(
 );
 
 app.get("/", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    response.json({ info: "Node.js, Express, and Postgres API" });
   }
-  response.json({ info: "Node.js, Express, and Postgres API" });
 });
 
 app.get("/sports", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.getSports(request, response);
   }
-  db.getSports(request, response);
 });
 
 app.get("/sports/:id", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.getSportById(request, response);
   }
-  db.getSportById(request, response);
 });
 
 app.get("/players", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.getPlayers(request, response);
   }
-  db.getPlayers(request, response);
 });
 
 app.post("/players", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.createPlayer(request, response);
   }
-  db.createPlayer(request, response);
 });
 
 app.get("/games", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.getGames(request, response);
   }
-  db.getGames(request, response);
 });
 
 app.post("/games", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.createGame(request, response);
   }
-  db.createGame(request, response);
 });
 
 app.patch("/goal", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.scoreGoal(request, response);
   }
-  db.scoreGoal(request, response);
 });
 
 app.post("/elos", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.createElo(request, response);
   }
-  db.createElo(request, response);
 });
 
 app.patch("/elos", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.updateElos(request, response);
   }
-  db.updateElos(request, response);
 });
 
 app.post("/logs", (request, response) => {
-  log(request);
-  if (!auth(request)) {
-    response.status(401).json({ error: "token did not match" });
-    return null;
+  if (processRequest(request, response)) {
+    db.createLog(request, response);
   }
-  db.createLog(request, response);
+});
+
+app.get("/session", (request, response) => {
+  if (processRequest(request, response)) {
+    db.getUserBySessionId(request, response);
+  }
+});
+
+app.get("/auth", (request, response) => {
+  if (processRequest(request, response)) {
+    db.authenticateUser(request, response);
+  }
+});
+
+app.post("/login", (request, response) => {
+  if (processRequest(request, response)) {
+    db.login(request, response);
+  }
 });
 
 app.listen(port, () => {
