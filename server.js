@@ -115,6 +115,15 @@ app.patch("/elos", (request, response) => {
   db.updateElos(request, response);
 });
 
+app.post("/logs", (request, response) => {
+  log(request);
+  if (!auth(request)) {
+    response.status(401).json({ error: "token did not match" });
+    return null;
+  }
+  db.createLog(request, response);
+});
+
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
 });

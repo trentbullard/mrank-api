@@ -131,7 +131,7 @@ export const createGame = async (request, response) => {
     });
 
     await client.query("COMMIT");
-    response.status(200).json({ id: gameRows.rows[0].id });
+    response.status(200).json(gameRows.rows[0]);
   } catch (error) {
     await client.query("ROLLBACK");
     response.status(500).json({ error });

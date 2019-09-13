@@ -44,20 +44,19 @@ export const createPlayer = async (request, response) => {
       text: `insert into players ("name") values ($1) returning *`,
       values: [name],
     });
-    let playerId = playerRows.rows[0].id;
+    let player = playerRows.rows[0];
 
     _.each(sports, async sport => {
       await client.query({
         text: `insert into elos ("playerid", "sportid", "elo") values ($1,$2,$3)`,
-        values: [playerId, sport.id, elo],
+        values: [player.id, sport.id, elo],
       });
     });
 
     await client.query("COMMIT");
-    response.status(200).json({ id: playerId });
+    response.status(200).json(player);
   } catch (error) {
     await client.query("ROLLBACK");
-    console.log(`createPlayer -> error`, error);
     response
       .status(500)
       .json({ message: "failed to create player", error: `${error}` });

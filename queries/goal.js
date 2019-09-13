@@ -16,7 +16,7 @@ export const scoreGoal = (request, response) => {
     query(sqlQuery, response);
   } else {
     response
-      .status(500)
+      .status(400)
       .json({ error: "newScore and teamPlayerId must be integers" });
   }
 };
