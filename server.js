@@ -118,6 +118,12 @@ app.post("/login", (request, response) => {
   }
 });
 
+app.post("/users", (request, response) => {
+  if (processRequest(request, response)) {
+    db.createUser(request, response);
+  }
+});
+
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
 });

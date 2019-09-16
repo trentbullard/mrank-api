@@ -50,3 +50,28 @@ export const login = async (request, response) => {
     client.release();
   }
 };
+
+export const createUser = async (request, response) => {
+  const client = await pool.connect();
+  try {
+    const cipher = request.query.cipher;
+    const { email, password } = decryptData(cipher);
+    const passwordHash = getPasswordHash(password);
+    const sessionId = getSessionId(request);
+
+    await client.query("BEGIN");
+    const userRows = await client.query({
+      text: `insert into users ("email", "passwordhash", "sessionid") values ($1,$2,$3) returning *`,
+      values: [email, passwordHash, sessionId],
+    });
+    const user = userRows.rows[0];
+    await client.query("COMMIT");
+
+    response.status(200).json(user);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    response.status(500).json({ message: "failed to create user", error });
+  } finally {
+    client.release();
+  }
+};
