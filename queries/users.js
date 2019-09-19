@@ -26,7 +26,7 @@ export const authenticateUser = (request, response) => {
 export const getUserBySessionId = (request, response) => {
   const sessionId = request.query.sessionId;
   const sqlQuery = `
-    select * from users where sessionId='${sessionId}'
+    select * from users where sessionid='${sessionId}'
   `;
   query(sqlQuery, response);
 };
