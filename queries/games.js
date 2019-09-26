@@ -45,8 +45,8 @@ export const getGames = (request, response) => {
     select
       id,
       started,
-      sportId,
-      eloAwarded
+      sportid,
+      eloawarded
     from games
     ${where}
     ${sort}

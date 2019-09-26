@@ -65,7 +65,7 @@ export const updateElos = async (request, response) => {
     await client.query({
       text: `
         update games set
-          eloAwarded=true
+          eloawarded=true
         where
           id=$1
       `,
