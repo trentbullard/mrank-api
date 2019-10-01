@@ -14,7 +14,18 @@ export const authenticateUser = (request, response) => {
     const { email, password } = decryptData(cipher);
     const passwordHash = getPasswordHash(password);
     sqlQuery = `
-    select * from users where email='${email}' and passwordhash='${passwordHash}'
+    select
+      id,
+      isadmin as "isAdmin",
+      email,
+      createdat as "createdAt",
+      sessionid as "sessionId",
+      firstname as "firstName",
+      lastname as "lastName"
+    from users
+    where
+      email='${email}'
+      and passwordhash='${passwordHash}'
   `;
   } catch (error) {
     response.status(500).json({ message: "error while authenticating", error });
@@ -26,7 +37,35 @@ export const authenticateUser = (request, response) => {
 export const getUserBySessionId = (request, response) => {
   const sessionId = request.query.sessionId;
   const sqlQuery = `
-    select * from users where sessionid='${sessionId}'
+    select
+      id,
+      isadmin as "isAdmin",
+      email,
+      createdat as "createdAt",
+      sessionid as "sessionId",
+      firstname as "firstName",
+      lastname as "lastName"
+    from users
+    where
+      sessionid='${sessionId}'
+  `;
+  query(sqlQuery, response);
+};
+
+export const getUserByUserId = (request, response) => {
+  const userId = request.query.userId;
+  const sqlQuery = `
+    select
+      id,
+      isadmin as "isAdmin",
+      email,
+      createdat as "createdAt",
+      sessionid as "sessionId",
+      firstname as "firstName",
+      lastname as "lastName"
+    from users
+    where
+      id='${userId}'
   `;
   query(sqlQuery, response);
 };

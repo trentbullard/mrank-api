@@ -118,6 +118,12 @@ app.post("/login", (request, response) => {
   }
 });
 
+app.get("/users", (request, response) => {
+  if (processRequest(request, response)) {
+    db.getUserByUserId(request, response);
+  }
+});
+
 app.post("/users", (request, response) => {
   if (processRequest(request, response)) {
     db.createUser(request, response);
