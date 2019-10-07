@@ -14,8 +14,9 @@ export const getPlayers = (request, response) => {
     },
     "order by ",
   );
-  const page = request.query.page;
+  const page = parseInt(request.query.page);
   const limit = request.query.limit || 10;
+  const paginate = page ? `limit ${limit} offset ${(page - 1) * limit}` : "";
   const sportId = request.query.sportId
     ? `and e.sportid=${request.query.sportId}`
     : "";
@@ -28,6 +29,7 @@ export const getPlayers = (request, response) => {
     from players p
       inner join elos e on e.playerid=p.id ${sportId}
     order by sport asc, elo desc, p.name asc
+    ${paginate}
   `;
   query(sqlQuery, response);
 };
