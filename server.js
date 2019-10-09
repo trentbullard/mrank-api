@@ -120,6 +120,12 @@ app.post("/login", (request, response) => {
 
 app.get("/users", (request, response) => {
   if (processRequest(request, response)) {
+    db.getUsers(request, response);
+  }
+});
+
+app.get("/users/:id", (request, response) => {
+  if (processRequest(request, response)) {
     db.getUserByUserId(request, response);
   }
 });

@@ -34,6 +34,21 @@ export const authenticateUser = (request, response) => {
   query(sqlQuery, response);
 };
 
+export const getUsers = (request, response) => {
+  const sqlQuery = `
+    select
+      id,
+      isadmin as "isAdmin",
+      email,
+      createdat as "createdAt",
+      sessionid as "sessionId",
+      firstname as "firstName",
+      lastname as "lastName"
+    from users
+  `;
+  query(sqlQuery, response);
+};
+
 export const getUserBySessionId = (request, response) => {
   const sessionId = request.query.sessionId;
   const sqlQuery = `
