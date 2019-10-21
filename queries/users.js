@@ -114,6 +114,7 @@ export const createUser = async (request, response) => {
     const sessionId = getSessionId(request);
 
     await client.query("BEGIN");
+    console.log(`  db:`, text.replace(/\n/g, " ").replace(/\s\s+/g, " "));
     const userRows = await client.query({
       text: `insert into users ("email", "passwordhash", "sessionid") values ($1,$2,$3) returning *`,
       values: [email, passwordHash, sessionId],
@@ -125,6 +126,51 @@ export const createUser = async (request, response) => {
   } catch (error) {
     await client.query("ROLLBACK");
     response.status(500).json({ message: "failed to create user", error });
+  } finally {
+    client.release();
+  }
+};
+
+export const editUser = async (request, response) => {
+  const client = await pool.connect();
+  let text;
+  let values;
+  try {
+    const cipher = request.query.cipher;
+    const { userId, email, password } = decryptData(cipher);
+    if (_.isEmpty(password)) {
+      text = `
+        update users
+        set
+          email=$1
+        where
+          id=$2
+        returning *`;
+      values = [email, userId];
+    } else {
+      const passwordHash = getPasswordHash(password);
+      text = `
+        update users
+        set
+          email=$1,
+          passwordhash=$2
+        where
+          id=$3
+        returning *`;
+      values = [email, passwordHash, userId];
+    }
+    console.log(`  db:`, text.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+    client.query(text, values, (err, result) => {
+      if (err) {
+        response
+          .status(500)
+          .json({ message: "failed to update user", error: err.stack });
+      } else {
+        response.status(200).json(result.rows[0]);
+      }
+    });
+  } catch (error) {
+    response.status(500).json({ message: "failed to update user", error });
   } finally {
     client.release();
   }

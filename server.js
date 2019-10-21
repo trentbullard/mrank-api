@@ -136,6 +136,12 @@ app.post("/users", (request, response) => {
   }
 });
 
+app.patch("/users/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.editUser(request, response);
+  }
+});
+
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
 });
