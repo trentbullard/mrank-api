@@ -175,3 +175,21 @@ export const editUser = async (request, response) => {
     client.release();
   }
 };
+
+export const deleteUser = async (request, response) => {
+  const client = await pool.connect();
+  const text = `
+    delete from users where id=$1
+  `;
+  const values = [request.params.id];
+  console.log(`  db:`, text.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+  client.query(text, values, (err, result) => {
+    if (err) {
+      response
+        .status(500)
+        .json({ message: "failed to delete user", error: err.stack });
+    } else {
+      response.status(200).json({ success: true });
+    }
+  });
+};

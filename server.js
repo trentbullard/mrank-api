@@ -142,6 +142,12 @@ app.patch("/users/:id", (request, response) => {
   }
 });
 
+app.delete("/users/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.deleteUser(request, response);
+  }
+});
+
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
 });
