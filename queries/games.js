@@ -63,7 +63,7 @@ export const getGames = (request, response) => {
 };
 
 export const createGame = async (request, response) => {
-  const sport = request.body.sport;
+  const sportId = request.body.sport;
   const eloAwarded = request.body.eloAwarded;
   const started = request.body.started;
   const teams = request.body.teams;
@@ -82,8 +82,8 @@ export const createGame = async (request, response) => {
 
   const gameRows = await pool.query({
     text:
-      "insert into games (sportid, eloawarded, started) values ($1,$2,$3) returning *",
-    values: [sport, eloAwarded, started],
+      'insert into games (sportid, eloawarded, started) values ($1,$2,$3) returning id, sportid as "sportId", eloawarded as "eloAwarded", started',
+    values: [sportId, eloAwarded, started],
   });
 
   const team1Rows = await pool.query({

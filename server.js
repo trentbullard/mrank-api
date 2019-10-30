@@ -52,6 +52,12 @@ app.get("/sports/:id", (request, response) => {
   }
 });
 
+app.get("/players/names", (request, response) => {
+  if (processRequest(request, response)) {
+    db.getPlayerNames(request, response);
+  }
+});
+
 app.get("/players", (request, response) => {
   if (processRequest(request, response)) {
     db.getPlayers(request, response);
@@ -61,6 +67,12 @@ app.get("/players", (request, response) => {
 app.post("/players", (request, response) => {
   if (processRequest(request, response)) {
     db.createPlayer(request, response);
+  }
+});
+
+app.patch("/players", (request, response) => {
+  if (processRequest(request, response)) {
+    db.editPlayer(request, response);
   }
 });
 

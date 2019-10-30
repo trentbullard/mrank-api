@@ -34,10 +34,12 @@ export const getPlayers = (request, response) => {
   query(sqlQuery, response);
 };
 
+export const getPlayerNames = (_request, response) => {
+  query("select name from players", response);
+};
+
 export const createPlayer = async (request, response) => {
-  let sports = request.body.sports;
-  let elo = request.body.elo;
-  let name = request.body.name;
+  const { sports, elo, name } = request.body;
 
   const client = await pool.connect();
   try {
@@ -62,6 +64,35 @@ export const createPlayer = async (request, response) => {
     response
       .status(500)
       .json({ message: "failed to create player", error: `${error}` });
+  } finally {
+    client.release();
+  }
+};
+
+export const editPlayer = async (request, response) => {
+  const client = await pool.connect();
+  const { playerId, name } = request.body;
+  try {
+    const text = `
+      update players
+      set
+        name=$1
+      where
+        id=$2
+      returning *`;
+    const values = [name, playerId];
+    console.log(`  db:`, text.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+    client.query(text, values, (err, result) => {
+      if (err) {
+        response
+          .status(500)
+          .json({ message: "failed to update player", error: err.stack });
+      } else {
+        response.status(200).json(result.rows[0]);
+      }
+    });
+  } catch (error) {
+    response.status(500).json({ message: "failed to update player", error });
   } finally {
     client.release();
   }
