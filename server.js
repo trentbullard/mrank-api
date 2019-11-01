@@ -76,6 +76,12 @@ app.patch("/players/:id", (request, response) => {
   }
 });
 
+app.delete("/players/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.deletePlayer(request, response);
+  }
+});
+
 app.get("/games", (request, response) => {
   if (processRequest(request, response)) {
     db.getGames(request, response);
