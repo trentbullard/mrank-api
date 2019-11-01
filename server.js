@@ -70,7 +70,7 @@ app.post("/players", (request, response) => {
   }
 });
 
-app.patch("/players", (request, response) => {
+app.patch("/players/:id", (request, response) => {
   if (processRequest(request, response)) {
     db.editPlayer(request, response);
   }

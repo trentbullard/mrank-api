@@ -71,7 +71,8 @@ export const createPlayer = async (request, response) => {
 
 export const editPlayer = async (request, response) => {
   const client = await pool.connect();
-  const { playerId, name } = request.body;
+  const { name } = request.body;
+  const { id: playerId } = request.params;
   try {
     const text = `
       update players
