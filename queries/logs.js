@@ -6,13 +6,14 @@ export const createLog = async (request, response) => {
   let objectId = request.body.objectId;
   let objectJson = request.body.objectJson;
   let message = request.body.message;
+  let userId = request.body.currentUserId;
 
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     await client.query({
-      text: `insert into logs ("actiontype", "objecttype", "objectid", "objectjson", "message") values ($1,$2,$3,$4,$5)`,
-      values: [actionType, objectType, objectId, objectJson, message],
+      text: `insert into logs ("actiontype", "objecttype", "objectid", "objectjson", "message", "userid") values ($1,$2,$3,$4,$5,$6)`,
+      values: [actionType, objectType, objectId, objectJson, message, userId],
     });
     await client.query("COMMIT");
 
