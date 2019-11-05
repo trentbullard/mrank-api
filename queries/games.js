@@ -32,8 +32,8 @@ export const getGames = (request, response) => {
   select
     g.id as "gameId",
     g.started as "started",
-    g.sportId as "sportId",
-    g.eloAwarded as "eloAwarded",
+    g.sportid as "sportId",
+    g.eloawarded as "eloAwarded",
     t.name as "teamName",
     p.id as "playerId",
     p.name as "playerName",
