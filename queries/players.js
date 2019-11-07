@@ -63,7 +63,7 @@ export const createPlayer = async (request, response) => {
     await client.query("ROLLBACK");
     response
       .status(500)
-      .json({ message: "failed to create player", error: `${error}` });
+      .json({ message: "failed to create player", error: `${error.stack}` });
   } finally {
     client.release();
   }

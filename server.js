@@ -52,6 +52,24 @@ app.get("/sports/:id", (request, response) => {
   }
 });
 
+app.post("/sports", (request, response) => {
+  if (processRequest(request, response)) {
+    db.createSport(request, response);
+  }
+});
+
+app.delete("/sports/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.deleteSport(request, response);
+  }
+});
+
+app.patch("/sports/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.updateSport(request, response);
+  }
+});
+
 app.get("/players/names", (request, response) => {
   if (processRequest(request, response)) {
     db.getPlayerNames(request, response);
