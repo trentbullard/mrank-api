@@ -1,65 +1,21 @@
 import _ from "lodash";
-import { pool } from "./helpers";
+import { pool, asyncEach } from "./helpers";
 
 export const updateElos = async (request, response) => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
-    await client.query({
-      text: `
-        update elos set
-          elo=$1
-        where
-          playerid=$2 and sportid=$3
-      `,
-      values: [
-        request.body.updatedElos[0].elo,
-        request.body.updatedElos[0].id,
-        request.body.sport.id,
-      ],
-    });
-
-    await client.query({
-      text: `
-        update elos set
-          elo=$1
-        where
-          playerid=$2 and sportid=$3
-      `,
-      values: [
-        request.body.updatedElos[1].elo,
-        request.body.updatedElos[1].id,
-        request.body.sport.id,
-      ],
-    });
-
-    await client.query({
-      text: `
-        update elos set
-          elo=$1
-        where
-          playerid=$2 and sportid=$3
-      `,
-      values: [
-        request.body.updatedElos[2].elo,
-        request.body.updatedElos[2].id,
-        request.body.sport.id,
-      ],
-    });
-
-    await client.query({
-      text: `
-        update elos set
-          elo=$1
-        where
-          playerid=$2 and sportid=$3
-      `,
-      values: [
-        request.body.updatedElos[3].elo,
-        request.body.updatedElos[3].id,
-        request.body.sport.id,
-      ],
+    asyncEach(request.body.updatedElos, async elo => {
+      await client.query({
+        text: `
+          update elos set
+            elo=$1
+          where
+            playerid=$2 and sportid=$3
+        `,
+        values: [elo.elo, elo.id, request.body.sport.id],
+      });
     });
 
     await client.query({

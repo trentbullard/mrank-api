@@ -66,3 +66,12 @@ export const getSessionId = ({ method, route: { path }, query: { token } }) => {
     secret,
   ).toString();
 };
+
+export const asyncEach = async (array, callback) => {
+  const result = {};
+  for (let index = 0; index < array.length; index++) {
+    const response = await callback(array[index], index, array);
+    result[array[index]] = await response;
+  }
+  return result;
+};
