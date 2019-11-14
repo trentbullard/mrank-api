@@ -139,39 +139,59 @@ export const editUser = async (request, response) => {
   let text;
   let values;
   try {
+    const { id } = request.params;
+    const userId = parseInt(id);
+    if (!userId) {
+      response.status(500).json({
+        message: "failed to update user",
+        error: "id param unrecognized",
+        params: request.params,
+      });
+      return null;
+    }
     const cipher = request.query.cipher;
-    const { userId, email, password } = decryptData(cipher);
+    const { email, password, firstName, lastName, isAdmin } = decryptData(
+      cipher,
+    );
+
+    const {
+      rows: matchingRows,
+    } = await client.query("select * from users where email=$1", [email]);
+    if (!_.isEmpty(matchingRows) && matchingRows[0].id !== userId) {
+      response.status(403).json({ error: "email already taken" });
+      return null;
+    }
+
     if (_.isEmpty(password)) {
       text = `
         update users
         set
-          email=$1
+          email=$1,
+          firstname=$2,
+          lastname=$3,
+          isadmin=$4
         where
-          id=$2
+          id=$5
         returning *`;
-      values = [email, userId];
+      values = [email, firstName, lastName, !!isAdmin, userId];
     } else {
       const passwordHash = getPasswordHash(password);
       text = `
         update users
         set
           email=$1,
-          passwordhash=$2
+          firstname=$2,
+          lastname=$3,
+          isadmin=$4,
+          passwordhash=$5
         where
-          id=$3
+          id=$6
         returning *`;
-      values = [email, passwordHash, userId];
+      values = [email, firstName, lastName, !!isAdmin, passwordHash, userId];
     }
     console.log(`  db:`, text.replace(/\n/g, " ").replace(/\s\s+/g, " "));
-    client.query(text, values, (err, result) => {
-      if (err) {
-        response
-          .status(500)
-          .json({ message: "failed to update user", error: err.stack });
-      } else {
-        response.status(200).json(result.rows[0]);
-      }
-    });
+    const { rows: updatedRows } = await client.query(text, values);
+    response.status(200).json(updatedRows[0]);
   } catch (error) {
     response.status(500).json({ message: "failed to update user", error });
   } finally {
