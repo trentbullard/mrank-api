@@ -124,7 +124,7 @@ export const updateSport = async (request, response) => {
 
     const sportRows = await client.query({
       text:
-        "update sports set name=$1, winningscore=$2, teamnames=$3, positionnames=$4, playersperteam=$5, iconname=$6 where id=$7 returning *",
+        "update sports set name=$1, winningscore=$2, teamnames=$3, positionnames=$4, playersperteam=$5, iconname=$6, enabled=$7 where id=$8 returning *",
       values: [
         name,
         winningScore,
@@ -132,6 +132,7 @@ export const updateSport = async (request, response) => {
         positionNames.replace(", ", ","),
         playersPerTeam,
         iconName,
+        enabled,
         id,
       ],
     });
