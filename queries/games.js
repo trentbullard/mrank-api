@@ -34,6 +34,7 @@ export const getGames = (request, response) => {
     g.started as "started",
     g.sportid as "sportId",
     g.eloawarded as "eloAwarded",
+    t.id as "teamId",
     t.name as "teamName",
     p.id as "playerId",
     p.name as "playerName",
@@ -60,6 +61,52 @@ export const getGames = (request, response) => {
   order by g.id desc, t.name asc, tp.position asc
   `;
   query(sqlQuery, response);
+};
+
+export const getTeamPlayer = async (request, response) => {
+  const teamPlayerId = parseInt(request.params.id);
+  if (!teamPlayerId) {
+    response.status(400).json({
+      message: "bad url params",
+    });
+    return null;
+  }
+
+  const client = await pool.connect();
+  try {
+    const text = `
+      select
+        p.name as "name",
+        tp.id,
+        tp.score,
+        tp.position
+      from team_players tp
+        inner join players p on p.id=tp.playerid
+      where
+        tp.id=$1
+    `;
+    const values = [teamPlayerId];
+    const dbLogText = `
+      select
+        p.name as "name",
+        tp.id,
+        tp.score,
+        tp.position
+      from team_players tp
+        inner join players p on p.id=tp.playerid
+      where
+        tp.id=${teamPlayerId}
+    `;
+    console.log(`  db:`, dbLogText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+    const { rows } = await client.query(text, values);
+    response.status(200).json(rows[0]);
+  } catch (error) {
+    response
+      .status(500)
+      .json({ message: "failed to fetch team player", error: error.stack });
+  } finally {
+    client.release();
+  }
 };
 
 export const createGame = async (request, response) => {
@@ -106,6 +153,26 @@ export const createGame = async (request, response) => {
   }
 };
 
+export const deleteGame = async (request, response) => {
+  const { id: gameId } = request.params;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const gameTeamRows = await deleteGameTeams(client, gameId);
+    await deleteGameAsync(client, gameId);
+    await deleteTeamPlayers(client, gameTeamRows);
+    await deleteTeams(client, gameTeamRows);
+    await client.query("COMMIT");
+    response.status(200).json({ success: true });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    response.status(500).json({ error: error.stack });
+  } finally {
+    client.release();
+  }
+};
+
 const insertTeams = async teamNames => {
   return await asyncEach(teamNames, async name => {
     const { rows } = await pool.query({
@@ -135,5 +202,63 @@ const insertGameTeams = async (client, gameId, teamRecords) => {
       text: "insert into game_teams (gameid, teamid) values ($1,$2)",
       values: [gameId, teamRecord.id],
     });
+  });
+};
+
+const deleteGameAsync = async (client, gameId) => {
+  const text = `
+    delete from games where id=$1 returning *
+  `;
+  const values = [gameId];
+  const logText = `
+    delete from games where id=${gameId} returning *
+  `;
+  console.log(`  db:`, logText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+  const { rows } = await client.query({ text, values });
+  return rows[0];
+};
+
+const deleteGameTeams = async (client, gameId) => {
+  const text = `
+    delete from game_teams where gameid=$1 returning *
+  `;
+  const values = [gameId];
+  const logText = `
+    delete from game_teams where gameid=${gameId} returning *
+  `;
+  console.log(`  db:`, logText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+  const { rows } = await client.query({ text, values });
+  return rows;
+};
+
+const deleteTeamPlayers = async (client, gameTeamRows) => {
+  return await asyncEach(gameTeamRows, async gameTeamRow => {
+    const teamId = gameTeamRow.teamid;
+    const text = `
+        delete from team_players where teamid=$1 returning *
+      `;
+    const values = [teamId];
+    const logText = `
+        delete from team_players where teamid=${teamId} returning *
+      `;
+    console.log(`  db:`, logText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+    const { rows } = await client.query({ text, values });
+    return rows;
+  });
+};
+
+const deleteTeams = async (client, gameTeamRows) => {
+  return await asyncEach(gameTeamRows, async gameTeamRow => {
+    const teamId = gameTeamRow.teamid;
+    const text = `
+        delete from teams where id=$1 returning *
+      `;
+    const values = [teamId];
+    const logText = `
+        delete from teams where id=${teamId} returning *
+      `;
+    console.log(`  db:`, logText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+    const { rows } = await client.query({ text, values });
+    return rows;
   });
 };

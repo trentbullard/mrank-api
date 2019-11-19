@@ -205,7 +205,8 @@ export const deleteUser = async (request, response) => {
     delete from users where id=$1
   `;
   const values = [request.params.id];
-  console.log(`  db:`, text.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+  const logText = `delete from users where id=${request.params.id}`;
+  console.log(`  db:`, logText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
   client.query(text, values, (err, result) => {
     if (err) {
       response

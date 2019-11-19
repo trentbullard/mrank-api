@@ -40,6 +40,10 @@ app.get("/", (request, response) => {
   }
 });
 
+/****************/
+/* Sport Routes */
+/****************/
+
 app.get("/sports", (request, response) => {
   if (processRequest(request, response)) {
     db.getSports(request, response);
@@ -69,6 +73,10 @@ app.patch("/sports/:id", (request, response) => {
     db.updateSport(request, response);
   }
 });
+
+/*****************/
+/* Player Routes */
+/*****************/
 
 app.get("/players/names", (request, response) => {
   if (processRequest(request, response)) {
@@ -100,9 +108,19 @@ app.delete("/players/:id", (request, response) => {
   }
 });
 
+/***************/
+/* Game Routes */
+/***************/
+
 app.get("/games", (request, response) => {
   if (processRequest(request, response)) {
     db.getGames(request, response);
+  }
+});
+
+app.get("/games/teamPlayers/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.getTeamPlayer(request, response);
   }
 });
 
@@ -112,11 +130,25 @@ app.post("/games", (request, response) => {
   }
 });
 
+app.delete("/games/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.deleteGame(request, response);
+  }
+});
+
+/****************/
+/* Score Routes */
+/****************/
+
 app.patch("/goal", (request, response) => {
   if (processRequest(request, response)) {
     db.scoreGoal(request, response);
   }
 });
+
+/**************/
+/* Elo Routes */
+/**************/
 
 app.post("/elos", (request, response) => {
   if (processRequest(request, response)) {
@@ -130,11 +162,19 @@ app.patch("/elos", (request, response) => {
   }
 });
 
+/**************/
+/* Log Routes */
+/**************/
+
 app.post("/logs", (request, response) => {
   if (processRequest(request, response)) {
     db.createLog(request, response);
   }
 });
+
+/***************/
+/* Auth Routes */
+/***************/
 
 app.get("/session", (request, response) => {
   if (processRequest(request, response)) {
@@ -153,6 +193,10 @@ app.post("/login", (request, response) => {
     db.login(request, response);
   }
 });
+
+/***************/
+/* User Routes */
+/***************/
 
 app.get("/users", (request, response) => {
   if (processRequest(request, response)) {
