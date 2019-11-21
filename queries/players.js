@@ -34,6 +34,36 @@ export const getPlayers = (request, response) => {
   query(sqlQuery, response);
 };
 
+export const getPlayer = async (request, response) => {
+  const { id: playerId } = request.params;
+  const client = await pool.connect();
+  try {
+    const text = `
+      select
+        id,
+        name
+      from players
+      where id=$1`;
+    const values = [playerId];
+    const logText = `
+      select
+        id,
+        name
+      from players
+      where id=${playerId}`;
+    console.log(`  db:`, logText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+    await client.query("BEGIN");
+    const { rows } = await client.query({ text, values });
+    await client.query("COMMIT");
+    response.status(200).json(rows[0]);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    response.status(500).json({ error: error.stack });
+  } finally {
+    client.release();
+  }
+};
+
 export const getPlayerNames = (_request, response) => {
   query("select name from players", response);
 };

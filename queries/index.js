@@ -5,3 +5,4 @@ export * from "./goal";
 export * from "./elos";
 export * from "./logs";
 export * from "./users";
+export * from "./teams";

@@ -84,6 +84,12 @@ app.get("/players/names", (request, response) => {
   }
 });
 
+app.get("/players/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.getPlayer(request, response);
+  }
+});
+
 app.get("/players", (request, response) => {
   if (processRequest(request, response)) {
     db.getPlayers(request, response);
@@ -118,9 +124,15 @@ app.get("/games", (request, response) => {
   }
 });
 
-app.get("/games/teamPlayers/:id", (request, response) => {
+app.get("/games/:id/teams", (request, response) => {
   if (processRequest(request, response)) {
-    db.getTeamPlayer(request, response);
+    db.getGameTeams(request, response);
+  }
+});
+
+app.get("/games/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.getGame(request, response);
   }
 });
 
@@ -133,6 +145,22 @@ app.post("/games", (request, response) => {
 app.delete("/games/:id", (request, response) => {
   if (processRequest(request, response)) {
     db.deleteGame(request, response);
+  }
+});
+
+/***************/
+/* Team Routes */
+/***************/
+
+app.get("/teams/:id", (request, response) => {
+  if (processRequest(request, response)) {
+    db.getTeam(request, response);
+  }
+});
+
+app.get("/teams/:id/players", (request, response) => {
+  if (processRequest(request, response)) {
+    db.getTeamPlayers(request, response);
   }
 });
 

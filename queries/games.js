@@ -63,47 +63,67 @@ export const getGames = (request, response) => {
   query(sqlQuery, response);
 };
 
-export const getTeamPlayer = async (request, response) => {
-  const teamPlayerId = parseInt(request.params.id);
-  if (!teamPlayerId) {
-    response.status(400).json({
-      message: "bad url params",
-    });
-    return null;
-  }
-
+export const getGame = async (request, response) => {
+  const { id } = request.params;
   const client = await pool.connect();
   try {
     const text = `
       select
-        p.name as "name",
-        tp.id,
-        tp.score,
-        tp.position
-      from team_players tp
-        inner join players p on p.id=tp.playerid
-      where
-        tp.id=$1
-    `;
-    const values = [teamPlayerId];
-    const dbLogText = `
+        id,
+        sportid as "sportId",
+        eloawarded as "eloAwarded",
+        started
+      from games
+      where id=$1`;
+    const values = [id];
+    const logText = `
       select
-        p.name as "name",
-        tp.id,
-        tp.score,
-        tp.position
-      from team_players tp
-        inner join players p on p.id=tp.playerid
-      where
-        tp.id=${teamPlayerId}
-    `;
-    console.log(`  db:`, dbLogText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
-    const { rows } = await client.query(text, values);
+        id,
+        sportid as "sportId",
+        eloawarded as "eloAwarded",
+        started
+      from games
+      where id=${id}`;
+    console.log(`  db:`, logText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+    await client.query("BEGIN");
+    const { rows } = await client.query({ text, values });
+    await client.query("COMMIT");
     response.status(200).json(rows[0]);
   } catch (error) {
-    response
-      .status(500)
-      .json({ message: "failed to fetch team player", error: error.stack });
+    await client.query("ROLLBACK");
+    response.status(500).json({ error: error.stack });
+  } finally {
+    client.release();
+  }
+};
+
+export const getGameTeams = async (request, response) => {
+  const { id: gameId } = request.params;
+  const client = await pool.connect();
+  try {
+    const text = `
+      select
+        id,
+        gameid as "gameId",
+        teamid as "teamId"
+      from game_teams
+      where gameid=$1`;
+    const values = [gameId];
+    const logText = `
+      select
+        id,
+        gameid as "gameId",
+        teamid as "teamId"
+      from game_teams
+      where gameid=${gameId}`;
+    console.log(`  db:`, logText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
+    await client.query("BEGIN");
+    const { rows } = await client.query({ text, values });
+    await client.query("COMMIT");
+    response.status(200).json(rows);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    response.status(500).json({ error: error.stack });
   } finally {
     client.release();
   }
@@ -111,40 +131,27 @@ export const getTeamPlayer = async (request, response) => {
 
 export const createGame = async (request, response) => {
   const { sport: sportId, eloAwarded, started, teams } = request.body;
-  const teamNames = _.map(Object.values(teams), team => {
+  const teamNames = _.map(teams, team => {
     return team.name;
   });
   const teamPositions = _.reduce(
-    Object.values(teams),
+    teams,
     (acc, team) => {
       return { ...acc, [team.name]: team.positions };
     },
     {},
   );
 
-  let gameRows;
-  let gameId;
-  try {
-    gameRows = await pool.query({
-      text:
-        'insert into games (sportid, eloawarded, started) values ($1,$2,$3) returning id, sportid as "sportId", eloawarded as "eloAwarded", started',
-      values: [sportId, eloAwarded, started],
-    });
-    gameId = gameRows.rows[0].id;
-  } catch (error) {
-    response.status(500).json({ error: error.stack });
-    return null;
-  }
-
-  const teamRecords = await insertTeams(teamNames);
-
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    const gameRow = await insertGame(client, sportId, eloAwarded, started);
+    const { id: gameId } = await gameRow;
+    const teamRecords = await insertTeams(teamNames);
     await insertTeamPlayers(client, teamRecords, teamPositions);
     await insertGameTeams(client, gameId, teamRecords);
     await client.query("COMMIT");
-    response.status(200).json(gameRows.rows[0]);
+    response.status(200).json(gameRow);
   } catch (error) {
     await client.query("ROLLBACK");
     response.status(500).json({ error: error.stack });
@@ -173,6 +180,15 @@ export const deleteGame = async (request, response) => {
   }
 };
 
+const insertGame = async (client, sportId, eloAwarded, started) => {
+  const { rows } = await client.query({
+    text:
+      'insert into games (sportid, eloawarded, started) values ($1,$2,$3) returning id, sportid as "sportId", eloawarded as "eloAwarded", started',
+    values: [sportId, eloAwarded, started],
+  });
+  return rows[0];
+};
+
 const insertTeams = async teamNames => {
   return await asyncEach(teamNames, async name => {
     const { rows } = await pool.query({
@@ -184,9 +200,9 @@ const insertTeams = async teamNames => {
 };
 
 const insertTeamPlayers = async (client, teamRecords, teamPositions) => {
-  asyncEach(Object.values(teamRecords), async teamRecord => {
+  await asyncEach(Object.values(teamRecords), async teamRecord => {
     const positions = teamPositions[teamRecord.name];
-    asyncEach(positions, async position => {
+    await asyncEach(positions, async position => {
       await client.query({
         text:
           "insert into team_players (teamid, playerid, position) values ($1,$2,$3)",
@@ -197,7 +213,7 @@ const insertTeamPlayers = async (client, teamRecords, teamPositions) => {
 };
 
 const insertGameTeams = async (client, gameId, teamRecords) => {
-  asyncEach(Object.values(teamRecords), async teamRecord => {
+  await asyncEach(Object.values(teamRecords), async teamRecord => {
     await client.query({
       text: "insert into game_teams (gameid, teamid) values ($1,$2)",
       values: [gameId, teamRecord.id],
