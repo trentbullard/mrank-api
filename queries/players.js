@@ -36,21 +36,26 @@ export const getPlayers = (request, response) => {
 
 export const getPlayer = async (request, response) => {
   const { id: playerId } = request.params;
+  const { sportId } = request.query;
   const client = await pool.connect();
   try {
     const text = `
       select
-        id,
-        name
-      from players
-      where id=$1`;
-    const values = [playerId];
+        p.id,
+        p.name,
+        e.elo
+      from players p
+        inner join elos e on e.playerid=p.id
+      where p.id=$1 and e.sportid=$2`;
+    const values = [playerId, sportId];
     const logText = `
       select
-        id,
-        name
-      from players
-      where id=${playerId}`;
+        p.id,
+        p.name,
+        e.elo
+      from players p
+        inner join elos e on e.playerid=p.id
+      where p.id=${playerId} and e.sportid=${sportId}`;
     console.log(`  db:`, logText.replace(/\n/g, " ").replace(/\s\s+/g, " "));
     await client.query("BEGIN");
     const { rows } = await client.query({ text, values });

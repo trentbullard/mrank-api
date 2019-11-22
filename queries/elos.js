@@ -2,11 +2,12 @@ import _ from "lodash";
 import { pool, asyncEach } from "./helpers";
 
 export const updateElos = async (request, response) => {
+  const { updatedElos, sportId, gameId } = request.body;
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
-    asyncEach(request.body.updatedElos, async elo => {
+    await asyncEach(updatedElos, async elo => {
       await client.query({
         text: `
           update elos set
@@ -14,7 +15,7 @@ export const updateElos = async (request, response) => {
           where
             playerid=$2 and sportid=$3
         `,
-        values: [elo.elo, elo.id, request.body.sport.id],
+        values: [elo.elo, elo.playerId, sportId],
       });
     });
 
@@ -25,7 +26,7 @@ export const updateElos = async (request, response) => {
         where
           id=$1
       `,
-      values: [request.body.gameId],
+      values: [gameId],
     });
 
     await client.query("COMMIT");
