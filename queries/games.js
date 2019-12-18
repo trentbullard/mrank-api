@@ -2,8 +2,17 @@ import _ from "lodash";
 import { query, pool, asyncEach } from "./helpers";
 
 export const getGames = (request, response) => {
-  let gameId = request.query.id;
-  let where = gameId ? `where id=${request.query.id}` : "";
+  let where = "";
+  if (request.query.where) {
+    let whereQuery = JSON.parse(request.query.where);
+    where = "where";
+    let and = "";
+    where += _.map(whereQuery, (value, key) => {
+      const kvp = `${and} ${key}='${value}' `;
+      and = "and";
+      return kvp;
+    });
+  }
   let limit = "";
   let sort = "";
   if (!_.isEmpty(request.query.sort)) {
@@ -49,7 +58,6 @@ export const getGames = (request, response) => {
       sportid,
       eloawarded
     from games
-    ${where}
     ${sort}
     ${limit}
   ) g
@@ -58,6 +66,7 @@ export const getGames = (request, response) => {
     join team_players tp on tp.teamid=t.id
     join players p on p.id=tp.playerid
     join elos e on e.playerid=p.id and e.sportid=g.sportId
+  ${where}
   order by g.id desc, t.name asc, tp.position asc
   `;
   query(sqlQuery, response);

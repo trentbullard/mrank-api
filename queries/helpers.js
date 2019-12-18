@@ -12,7 +12,7 @@ export const query = (sql, response) => {
   console.log(`  db:`, sql.replace(/\n/g, " ").replace(/\s\s+/g, " "));
   pool.query(sql, (error, results) => {
     if (error) {
-      response.status(500).json({ error });
+      response.status(500).json({ error: error.stack });
     } else {
       response.status(200).json(results.rows);
     }
