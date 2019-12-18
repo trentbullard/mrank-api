@@ -53,11 +53,17 @@ export const getGames = (request, response) => {
     tp.id as "teamPlayerId"
   from (
     select
-      id,
-      started,
-      sportid,
-      eloawarded
+      games.id,
+      games.started,
+      games.sportid,
+      games.eloawarded
     from games
+      join game_teams gt on gt.gameid=games.id
+      join teams t on t.id=gt.teamid
+      join team_players tp on tp.teamid=t.id
+      join players p on p.id=tp.playerid
+    ${where}
+    group by games.id
     ${sort}
     ${limit}
   ) g
@@ -66,7 +72,6 @@ export const getGames = (request, response) => {
     join team_players tp on tp.teamid=t.id
     join players p on p.id=tp.playerid
     join elos e on e.playerid=p.id and e.sportid=g.sportId
-  ${where}
   order by g.id desc, t.name asc, tp.position asc
   `;
   query(sqlQuery, response);
